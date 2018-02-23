@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -13,6 +14,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import mySpring.framework.mySpring.framework.annotation.Controller;
+import mySpring.framework.mySpring.framework.annotation.Dao;
+import mySpring.framework.mySpring.framework.annotation.MyAgent;
+import mySpring.framework.mySpring.framework.annotation.Service;
 
 
 public class MyContext {
@@ -99,4 +105,38 @@ public class MyContext {
 //			}
 //		}
 //	}
+	public void manageClass(Class clazz) throws InstantiationException, IllegalAccessException{
+		if(clazz.isInterface())
+			return;
+		Annotation[] annotations = clazz.getAnnotations();
+		Object obj=null;
+		for(Annotation annotation:annotations){
+			if(annotation instanceof Controller||annotation instanceof Service||annotation instanceof Dao){
+				obj = clazz.newInstance();
+			}
+		}
+		if(obj!=null){
+			Field[] fields =  clazz.getDeclaredFields();   
+			for(Field field:fields){
+				field.setAccessible(true);
+				MyAgent annotation = field.getAnnotation(MyAgent.class);
+				String classsspaceName =""; 
+				if(annotation!=null){
+					classsspaceName = annotation.value();
+					if(classsspaceName.isEmpty()){
+						classsspaceName = field.getType().getName();
+					}
+					if(spaceNameContext.get(classsspaceName)==null){
+						manageClass(field.getType());
+					}
+					field.set(obj, spaceNameContext.get(classsspaceName));
+				}
+			}
+			spaceNameContext.put(clazz.getName(), obj);
+		}
+		
+	}
+	public Object getBean(String beanName){
+		return null;
+	}
 }
