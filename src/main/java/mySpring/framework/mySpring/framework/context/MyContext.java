@@ -24,6 +24,7 @@ import mySpring.framework.mySpring.framework.annotation.Service;
 public class MyContext {
 	private Map<String,Object> classNameContext=new HashMap<>();
 	private Map<String,Object> spaceNameContext=new HashMap<>();
+	private Map<String,Object> beanContext = new HashMap<>();
 //	public void init(){
 //		try {
 //			File f = new File("spring.xml");
@@ -113,10 +114,19 @@ public class MyContext {
 		for(Annotation annotation:annotations){
 			if(annotation instanceof Controller||annotation instanceof Service||annotation instanceof Dao){
 				obj = clazz.newInstance();
+				spaceNameContext.put(clazz.getName(), obj);
 			}
 		}
+		
+	}
+	public Object getBean(String beanName) throws InstantiationException, IllegalAccessException{
+		Object obj = beanContext.get(beanName);
+		if(obj == null)
+			obj = spaceNameContext.get(beanName);
+		else
+			return obj;
 		if(obj!=null){
-			Field[] fields =  clazz.getDeclaredFields();   
+			Field[] fields =  obj.getClass().getDeclaredFields();   
 			for(Field field:fields){
 				field.setAccessible(true);
 				MyAgent annotation = field.getAnnotation(MyAgent.class);
@@ -129,14 +139,12 @@ public class MyContext {
 					if(spaceNameContext.get(classsspaceName)==null){
 						manageClass(field.getType());
 					}
-					field.set(obj, spaceNameContext.get(classsspaceName));
+					field.set(obj, getBean(classsspaceName));
 				}
 			}
-			spaceNameContext.put(clazz.getName(), obj);
+			spaceNameContext.put(beanName, obj);
+			return obj;
 		}
-		
-	}
-	public Object getBean(String beanName){
-		return null;
+		return null;//throw...
 	}
 }
