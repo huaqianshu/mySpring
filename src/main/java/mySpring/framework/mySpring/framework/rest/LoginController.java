@@ -17,11 +17,11 @@ public class LoginController {
 	@MyAgent
 	private HttpServletRequest request;
 	@RequestMapping("/signin")
-	public void signin(){
-		
+	public String signin(){
+		return userService.saveUser(request)==0?"true":"false";
 	}
 	@RequestMapping("/checkin")
-	public void checkin(){
-		
+	public String checkin(){
+		return userService.checkUser(request)==0?"true":"false";
 	}
 }

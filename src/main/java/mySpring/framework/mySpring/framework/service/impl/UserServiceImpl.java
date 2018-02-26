@@ -19,13 +19,15 @@ public class UserServiceImpl implements UserService {
 		user.setIdType(req.getAttribute("idType").toString());
 		user.setMobile(req.getAttribute("mobile").toString());
 		user.setName(req.getAttribute("name").toString());
-		return userDao.saveUser(user);
+		//return userDao.saveUser(user);
+		return 0;
 	}
 
 	@Override
 	public int checkUser(HttpServletRequest req) {
 		String mobile = (String) req.getAttribute("mobile");
-		return userDao.checkUser(mobile);
+		//return userDao.checkUser(mobile);
+		return 1;
 	}
 
 }

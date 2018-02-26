@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -18,13 +19,15 @@ import java.util.Map;
 import mySpring.framework.mySpring.framework.annotation.Controller;
 import mySpring.framework.mySpring.framework.annotation.Dao;
 import mySpring.framework.mySpring.framework.annotation.MyAgent;
+import mySpring.framework.mySpring.framework.annotation.RequestMapping;
 import mySpring.framework.mySpring.framework.annotation.Service;
 
 
 public class MyContext {
-	private Map<String,Object> classNameContext=new HashMap<>();
-	private Map<String,Object> spaceNameContext=new HashMap<>();
-	private Map<String,Object> beanContext = new HashMap<>();
+	private final Map<String,String> classNameContext=new HashMap<>();
+	private static Map<String,Object> spaceNameContext=new HashMap<>();
+	private final Map<String,Object> beanContext = new HashMap<>();
+	private final Map<String,String> methodNameContext=new HashMap<>();
 //	public void init(){
 //		try {
 //			File f = new File("spring.xml");
@@ -106,7 +109,8 @@ public class MyContext {
 //			}
 //		}
 //	}
-	public void manageClass(Class clazz) throws InstantiationException, IllegalAccessException{
+	public static void manageClass(String classname) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
+		Class clazz = Class.forName(classname);
 		if(clazz.isInterface())
 			return;
 		Annotation[] annotations = clazz.getAnnotations();
@@ -119,7 +123,7 @@ public class MyContext {
 		}
 		
 	}
-	public Object getBean(String beanName) throws InstantiationException, IllegalAccessException{
+	public Object getBean(String beanName) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		Object obj = beanContext.get(beanName);
 		if(obj == null)
 			obj = spaceNameContext.get(beanName);
@@ -137,14 +141,40 @@ public class MyContext {
 						classsspaceName = field.getType().getName();
 					}
 					if(spaceNameContext.get(classsspaceName)==null){
-						manageClass(field.getType());
+						manageClass(field.getType().getName());
 					}
 					field.set(obj, getBean(classsspaceName));
 				}
 			}
 			spaceNameContext.put(beanName, obj);
+			
+			RequestMapping requestMapping = obj.getClass().getAnnotation(RequestMapping.class);
+			String classvalue = requestMapping.value();
+			if(!classvalue.endsWith("/"))
+				classvalue+="/";
+			if(requestMapping!=null){
+				Method[] methods = obj.getClass().getDeclaredMethods();
+				for(Method method:methods){
+					RequestMapping methodRequestMapping = method.getAnnotation(RequestMapping.class);
+					if(methodRequestMapping!=null){
+						String methodvalue = methodRequestMapping.value();
+						if(!methodvalue.startsWith("/"))
+							methodvalue = methodvalue.substring(1, methodvalue.length());
+						classNameContext.put(classvalue+methodvalue, beanName);
+						methodNameContext.put(classvalue+methodvalue, method.getName());
+					}
+				}
+			}
+			
 			return obj;
 		}
-		return null;//throw...
+		throw new RuntimeException("no such bean");
+	}
+	public String getBeanName(String uri){
+		return classNameContext.get(uri);
+	}
+	public String getMethodName(String uri){
+		return methodNameContext.get(uri);
 	}
 }
+
