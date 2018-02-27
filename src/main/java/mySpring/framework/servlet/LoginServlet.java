@@ -28,21 +28,24 @@ public class LoginServlet extends HttpServlet{
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String uri = req.getRequestURI();
-		try {
-			Object obj = myContext.getBean(myContext.getBeanName(uri));
-			String methodString = myContext.getMethodName(uri);
-			Method method = obj.getClass().getMethod(methodString);
-			Object res = method.invoke(obj, req);
-			String result=null;
-			if(res instanceof String)
-				result = (String)res;
-			PrintWriter out = resp.getWriter();
-			out.print(result);
-			out.flush();
-			out.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(uri.endsWith(".do")){
+			uri = uri.substring(0, uri.length()-3);
+			try {
+				Object obj = myContext.getBean(myContext.getBeanName(uri));
+				String methodString = myContext.getMethodName(uri);
+				Method method = obj.getClass().getMethod(methodString);
+				Object res = method.invoke(obj, req);
+				String result=null;
+				if(res instanceof String)
+					result = (String)res;
+				PrintWriter out = resp.getWriter();
+				out.print(result);
+				out.flush();
+				out.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	@Override

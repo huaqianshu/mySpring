@@ -10,7 +10,7 @@
 
     <servlet-mapping>
         <servlet-name>myspring</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>*.do</url-pattern>
     </servlet-mapping>
 
     <welcome-file-list>

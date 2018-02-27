@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import mySpring.framework.mySpring.framework.annotation.Component;
 import mySpring.framework.mySpring.framework.annotation.Controller;
 import mySpring.framework.mySpring.framework.annotation.Dao;
 import mySpring.framework.mySpring.framework.annotation.MyAgent;
@@ -24,10 +25,10 @@ import mySpring.framework.mySpring.framework.annotation.Service;
 
 
 public class MyContext {
-	private final Map<String,String> classNameContext=new HashMap<>();
+	private final static Map<String,String> classNameContext=new HashMap<>();
 	private static Map<String,Object> spaceNameContext=new HashMap<>();
 	private final Map<String,Object> beanContext = new HashMap<>();
-	private final Map<String,String> methodNameContext=new HashMap<>();
+	private final static Map<String,String> methodNameContext=new HashMap<>();
 //	public void init(){
 //		try {
 //			File f = new File("spring.xml");
@@ -116,9 +117,32 @@ public class MyContext {
 		Annotation[] annotations = clazz.getAnnotations();
 		Object obj=null;
 		for(Annotation annotation:annotations){
-			if(annotation instanceof Controller||annotation instanceof Service||annotation instanceof Dao){
+			if(annotation instanceof Component){
+				Component component = (Component) annotation;
 				obj = clazz.newInstance();
-				spaceNameContext.put(clazz.getName(), obj);
+				RequestMapping requestMapping = obj.getClass().getAnnotation(RequestMapping.class);
+				if(requestMapping!=null){
+					String classvalue = requestMapping.value();
+					if(!classvalue.endsWith("/"))
+						classvalue+="/";
+					if(!classvalue.startsWith("/"))
+						classvalue = "/"+classvalue;
+					Method[] methods = obj.getClass().getDeclaredMethods();
+					for(Method method:methods){
+						RequestMapping methodRequestMapping = method.getAnnotation(RequestMapping.class);
+						if(methodRequestMapping!=null){
+							String methodvalue = methodRequestMapping.value();
+							if(methodvalue.startsWith("/"))
+								methodvalue = methodvalue.substring(1, methodvalue.length());
+							classNameContext.put(classvalue+methodvalue, classname);
+							methodNameContext.put(classvalue+methodvalue, method.getName());
+						}
+					}
+				}
+				String className = component.value();
+				if(className.isEmpty())
+					className =clazz.getName(); 
+				spaceNameContext.put(className, obj);
 			}
 		}
 		
@@ -148,23 +172,7 @@ public class MyContext {
 			}
 			spaceNameContext.put(beanName, obj);
 			
-			RequestMapping requestMapping = obj.getClass().getAnnotation(RequestMapping.class);
-			String classvalue = requestMapping.value();
-			if(!classvalue.endsWith("/"))
-				classvalue+="/";
-			if(requestMapping!=null){
-				Method[] methods = obj.getClass().getDeclaredMethods();
-				for(Method method:methods){
-					RequestMapping methodRequestMapping = method.getAnnotation(RequestMapping.class);
-					if(methodRequestMapping!=null){
-						String methodvalue = methodRequestMapping.value();
-						if(!methodvalue.startsWith("/"))
-							methodvalue = methodvalue.substring(1, methodvalue.length());
-						classNameContext.put(classvalue+methodvalue, beanName);
-						methodNameContext.put(classvalue+methodvalue, method.getName());
-					}
-				}
-			}
+			
 			
 			return obj;
 		}

@@ -2,11 +2,13 @@ package mySpring.framework.mySpring.framework.scan;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 
+import mySpring.framework.mySpring.framework.annotation.MySpringApplication;
 import mySpring.framework.mySpring.framework.context.MyContext;
 
 public class Scanner {
@@ -27,9 +29,27 @@ public class Scanner {
 				scannerFile(path+"\\"+filename);
 		}else if(file.getName().endsWith(".java")){
 			String absfilename = file.getAbsolutePath();
-			String filename = absfilename.substring(absfilename.indexOf(System.getProperty("user.dir"))+System.getProperty("user.dir").length()+1,absfilename.length());
+			String filename = absfilename.substring(absfilename.indexOf(System.getProperty("user.dir"))+System.getProperty("user.dir").length()+15,absfilename.length());
 			filename = filename.replaceAll("\\\\", ".");
-			String classname =filename.substring(0,filename.length()-5)+".class"; 
+			String classname =filename.substring(0,filename.length()-5); 
+			Class clazz = Class.forName(classname);
+			Annotation mySpringApplication = clazz.getAnnotation(MySpringApplication.class);
+			if(mySpringApplication!=null){
+				scanner(file.getParent());
+			}
+		}
+	}
+	private void scanner(String path) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
+		File file = new File(path);
+		if(file.isDirectory()){
+			String[] filelist = file.list();
+			for(String filename:filelist)
+				scanner(path+"\\"+filename);
+		}else if(file.getName().endsWith(".java")){
+			String absfilename = file.getAbsolutePath();
+			String filename = absfilename.substring(absfilename.indexOf(System.getProperty("user.dir"))+System.getProperty("user.dir").length()+15,absfilename.length());
+			filename = filename.replaceAll("\\\\", ".");
+			String classname =filename.substring(0,filename.length()-5); 
 			MyContext.manageClass(classname);
 		}
 	}
