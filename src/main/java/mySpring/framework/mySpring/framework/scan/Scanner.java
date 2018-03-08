@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
 
 import mySpring.framework.mySpring.framework.annotation.MySpringApplication;
 import mySpring.framework.mySpring.framework.context.MyContext;
@@ -20,8 +19,9 @@ public class Scanner {
 	
 	public void scanner(){
 		try {
-			System.out.println(this.getClass().getResource("/").toString());
-			scannerFile(this.getClass().getResource("/").toString());
+			System.out.println(classLoader.getResource("").getPath());
+			System.out.println(this.getClass().getResource("").getPath().substring(1));
+			scannerFile(classLoader.getResource("").getPath().substring(1));
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
