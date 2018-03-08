@@ -22,9 +22,10 @@ import mySpring.framework.mySpring.framework.annotation.Dao;
 import mySpring.framework.mySpring.framework.annotation.MyAgent;
 import mySpring.framework.mySpring.framework.annotation.RequestMapping;
 import mySpring.framework.mySpring.framework.annotation.Service;
+import mySpring.framework.mySpring.framework.beanfactory.BeanFactory;
 
 
-public class MyContext {
+public class MyContext implements BeanFactory{
 	private final static Map<String,String> classNameContext=new HashMap<>();
 	private static Map<String,Object> spaceNameContext=new HashMap<>();
 	private final Map<String,Object> beanContext = new HashMap<>();

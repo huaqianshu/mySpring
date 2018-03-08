@@ -3,6 +3,9 @@ package mySpring.framework.mySpring.framework.scan;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,44 +15,44 @@ import mySpring.framework.mySpring.framework.annotation.MySpringApplication;
 import mySpring.framework.mySpring.framework.context.MyContext;
 
 public class Scanner {
-
+	private ClassLoader classLoader = getClass().getClassLoader();
+	
+	
 	public void scanner(){
 		try {
-			scannerFile(System.getProperty("user.dir"));
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			System.out.println(this.getClass().getResource("/").toString());
+			scannerFile(this.getClass().getResource("/").toString());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	private void scannerFile(String path) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
-		File file = new File(path);
-		if(file.isDirectory()){
-			String[] filelist = file.list();
-			for(String filename:filelist)
-				scannerFile(path+"\\"+filename);
-		}else if(file.getName().endsWith(".java")){
-			String absfilename = file.getAbsolutePath();
-			String filename = absfilename.substring(absfilename.indexOf(System.getProperty("user.dir"))+System.getProperty("user.dir").length()+15,absfilename.length());
-			filename = filename.replaceAll("\\\\", ".");
-			String classname =filename.substring(0,filename.length()-5); 
-			Class clazz = Class.forName(classname);
-			Annotation mySpringApplication = clazz.getAnnotation(MySpringApplication.class);
-			if(mySpringApplication!=null){
-				scanner(file.getParent());
+	private void scannerFile(String path) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException{
+		path = path.replace(".", "/"); 
+		Enumeration<URL> urls = classLoader.getResources(path);
+		
+		while(urls.hasMoreElements()){
+			URL url = urls.nextElement();
+			String protocol = url.getProtocol();
+			if("file".equals(protocol)){
+				String file = URLDecoder.decode(url.getFile(), "UTF-8");
+                File dir = new File(file);
+                if(dir.isDirectory()){
+                	scanner(dir);
+                }
+			}else{
+				System.err.println(protocol);
 			}
 		}
 	}
-	private void scanner(String path) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
-		File file = new File(path);
+	private void scanner(File file) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		if(file.isDirectory()){
-			String[] filelist = file.list();
-			for(String filename:filelist)
-				scanner(path+"\\"+filename);
-		}else if(file.getName().endsWith(".java")){
-			String absfilename = file.getAbsolutePath();
-			String filename = absfilename.substring(absfilename.indexOf(System.getProperty("user.dir"))+System.getProperty("user.dir").length()+15,absfilename.length());
-			filename = filename.replaceAll("\\\\", ".");
-			String classname =filename.substring(0,filename.length()-5); 
+			File[] files = file.listFiles();
+			for(File everyfile:files)
+				scanner(everyfile);
+		}else if(file.getName().endsWith(".class")){
+			String classname = file.getPath();
+			classname = classname.substring(classname.indexOf("classes")+8).replace("\\", ".");
 			MyContext.manageClass(classname);
 		}
 	}

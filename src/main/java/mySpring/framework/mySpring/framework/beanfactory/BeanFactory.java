@@ -1,5 +1,5 @@
 package mySpring.framework.mySpring.framework.beanfactory;
 
-public class BeanFactory {
-
+public interface BeanFactory {
+	Object getBean(String className) throws InstantiationException, IllegalAccessException, ClassNotFoundException;
 }
