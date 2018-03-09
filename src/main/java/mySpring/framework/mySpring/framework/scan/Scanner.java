@@ -20,8 +20,11 @@ public class Scanner {
 	
 	public void scanner(){
 		try {
-			System.out.println(this.getClass().getResource("/").toString());
-			scannerFile(this.getClass().getResource("/").toString());
+			System.out.println(this.getClass().getResource("/").getPath());
+			System.out.println(this.getClass().getResource("").getPath());
+			String thispath = this.getClass().getResource("").getPath().replace(this.getClass().getResource("/").getPath(), "");
+			System.out.println(thispath.substring(0,thispath.indexOf("/")));
+			scannerFile(thispath.substring(0,thispath.indexOf("/")));
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,6 +56,7 @@ public class Scanner {
 		}else if(file.getName().endsWith(".class")){
 			String classname = file.getPath();
 			classname = classname.substring(classname.indexOf("classes")+8).replace("\\", ".");
+			classname = classname.substring(0, classname.length()-6);
 			MyContext.manageClass(classname);
 		}
 	}

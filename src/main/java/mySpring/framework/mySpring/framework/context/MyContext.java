@@ -118,8 +118,15 @@ public class MyContext implements BeanFactory{
 		Annotation[] annotations = clazz.getAnnotations();
 		Object obj=null;
 		for(Annotation annotation:annotations){
-			if(annotation instanceof Component){
-				Component component = (Component) annotation;
+			String className = "";
+			if(annotation instanceof Component)
+				className = ((Component) annotation).value();
+			else if(annotation instanceof Controller)
+				className = "";
+			else if(annotation instanceof Dao)
+				className = ((Dao) annotation).value();
+			else if(annotation instanceof Service)
+				className = ((Service) annotation).value();
 				obj = clazz.newInstance();
 				RequestMapping requestMapping = obj.getClass().getAnnotation(RequestMapping.class);
 				if(requestMapping!=null){
@@ -139,14 +146,13 @@ public class MyContext implements BeanFactory{
 							methodNameContext.put(classvalue+methodvalue, method.getName());
 						}
 					}
+					
+					
 				}
-				String className = component.value();
 				if(className.isEmpty())
 					className =clazz.getName(); 
 				spaceNameContext.put(className, obj);
 			}
-		}
-		
 	}
 	public Object getBean(String beanName) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		Object obj = beanContext.get(beanName);
