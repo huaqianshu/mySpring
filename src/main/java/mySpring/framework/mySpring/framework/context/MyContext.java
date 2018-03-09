@@ -30,6 +30,7 @@ public class MyContext implements BeanFactory{
 	private static Map<String,Object> spaceNameContext=new HashMap<>();
 	private final Map<String,Object> beanContext = new HashMap<>();
 	private final static Map<String,String> methodNameContext=new HashMap<>();
+	private final String requestObj ="javax.servlet.http.HttpServletRequest";
 //	public void init(){
 //		try {
 //			File f = new File("spring.xml");
@@ -171,7 +172,10 @@ public class MyContext implements BeanFactory{
 					if(classsspaceName.isEmpty()){
 						classsspaceName = field.getType().getName();
 					}
-					if(spaceNameContext.get(classsspaceName)==null){
+					if(classsspaceName.equals(requestObj)){
+						field.set(obj,new SpecialContext().getBean(classsspaceName));
+						continue;
+					}else if(spaceNameContext.get(classsspaceName)==null){
 						manageClass(field.getType().getName());
 					}
 					field.set(obj, getBean(classsspaceName));
@@ -183,7 +187,7 @@ public class MyContext implements BeanFactory{
 			
 			return obj;
 		}
-		throw new RuntimeException("no such bean");
+		throw new RuntimeException("no such bean"+beanName);
 	}
 	public String getBeanName(String uri){
 		return classNameContext.get(uri);
