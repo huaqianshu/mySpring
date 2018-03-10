@@ -53,6 +53,7 @@ public class Scanner {
 		}else if(file.getName().endsWith(".class")){
 			String classname = file.getPath();
 			classname = classname.substring(classname.indexOf("classes")+8).replace("\\", ".");
+			classname = classname.substring(0, classname.length()-6);
 			MyContext.manageClass(classname);
 		}
 	}
